@@ -7,28 +7,13 @@
 # --------------------------------------------------------------------------
 import pickle
 import numpy as np
-import matplotlib.cm as cm
-import matplotlib.pyplot as plt
+
 
 def load_data():
-    PICKLE_FILE_PATH = 'train.pkl'
+    PICKLE_FILE_PATH = 'myfile.pkl'
     with open(PICKLE_FILE_PATH, 'rb') as f:
         return pickle.load(f)
 
-def predict(x):
-    """
-    Funkcja pobiera macierz przykladow zapisanych w macierzy X o wymiarach NxD i zwraca wektor y o wymiarach Nx1,
-    gdzie kazdy element jest z zakresu {0, ..., 9} i oznacza znak rozpoznany na danym przykladzie.
-    :param x: macierz o wymiarach NxD
-    :return: wektor o wymiarach Nx1
-    """
-    #data = load_data()
-    return ((np.random.rand(x.shape[0])*10).astype(int))
-    pass
-
-def show():
-
-    pass
 
 def hamming_distance(X, X_train):
     """
@@ -39,17 +24,15 @@ def hamming_distance(X, X_train):
     zbioru zwrocone zostana w postaci macierzy
     :return: macierz odleglosci pomiedzy obiektami z X i X_train N1xN2
     """
-
-
-    x = X#.toarray()#.astype(int)
-    #print(x)
-    x_trainT = np.transpose(X_train)#.toarray()).astype(int)
-    #print(x.shape[1] - x @ x_trainT - (1 - x) @ (1 - x_trainT))
-    x_a=x @ x_trainT
-    x_c=1 - x
-    x_d=1 - x_trainT
-    x_b=(x_c) @ (x_d)
-    #print((x.shape[1] - x @ x_trainT - (1 - x) @ (1 - x_trainT)))
+    x = X  # .toarray()#.astype(int)
+    # print(x)
+    x_trainT = np.transpose(X_train)  # .toarray()).astype(int)
+    # print(x.shape[1] - x @ x_trainT - (1 - x) @ (1 - x_trainT))
+    # x_a = x @ x_trainT
+    # x_c = 1 - x
+    # x_d = 1 - x_trainT
+    # x_b = (x_c) @ (x_d)
+    # print((x.shape[1] - x @ x_trainT - (1 - x) @ (1 - x_trainT)))
     return x.shape[1] - x @ x_trainT - (1 - x) @ (1 - x_trainT)
 
 
@@ -72,6 +55,30 @@ def sort_train_labels_knn(Dist, y):
     return y[order]
 
 
+def predict(x):
+    """
+    Funkcja pobiera macierz przykladow zapisanych w macierzy X o wymiarach NxD i zwraca wektor y o wymiarach Nx1,
+    gdzie kazdy element jest z zakresu {0, ..., 9} i oznacza znak rozpoznany na danym przykladzie.
+    :param x: macierz o wymiarach NxD
+    :return: wektor o wymiarach Nx1
+    """
+
+    # return ((np.random.rand(x.shape[0])*10).astype(int))
+    ####################
+    data = load_data()
+    sorted_labels = sort_train_labels_knn(hamming_distance(x, data[0]), data[1])
+    # print(sorted_labels.shape[0])
+    n = sorted_labels.shape[0]
+    help = []
+    for i in range(0, n):
+        # print(sorted_labels[i][0])
+        help.append(sorted_labels[i][0])
+
+    yyy = np.array(help)
+    return yyy
+    pass
+
+
 def p_y_x_knn(y, k):
     """
     Funkcja wyznacza rozklad prawdopodobienstwa p(y|x) dla
@@ -88,9 +95,12 @@ def p_y_x_knn(y, k):
         for j in range(k):
             helper.append(y[i][j])
         line = np.bincount(helper, None, number_of_classes)
-        result_matrix.append([line[0] / k, line[1] / k, line[2] / k, line[3] / k, line[4] / k, line[5] / k, line[6] / k, line[7] / k, line[8] / k, line[9] / k])
+        result_matrix.append(
+            [line[0] / k, line[1] / k, line[2] / k, line[3] / k, line[4] / k, line[5] / k, line[6] / k, line[7] / k,
+             line[8] / k, line[9] / k])
     return result_matrix
     pass
+
 
 def classification_error(p_y_x, y_true):
     """
@@ -100,14 +110,14 @@ def classification_error(p_y_x, y_true):
     Kazdy wiersz macierzy reprezentuje rozklad p(y|x)
     :return: blad klasyfikacji
     """
-    #print(p_y_x)
+    # print(p_y_x)
     n = len(p_y_x)
     m = len(p_y_x[0])
     res = 0
     for i in range(0, n):
         if (m - np.argmax(p_y_x[i][::-1]) - 1) != y_true[i]:
             res += 1
-    return res/n
+    return res / n
     pass
 
 
@@ -122,6 +132,17 @@ def model_selection_knn(Xval, Xtrain, yval, ytrain, k_values):
     osiagniety blad, best_k - k dla ktorego blad byl najnizszy, errors - lista wartosci bledow dla kolejnych k z k_values
     """
     sorted_labels = sort_train_labels_knn(hamming_distance(Xval, Xtrain), ytrain)
+    print(sorted_labels.shape[0])
+    n = sorted_labels.shape[0]
+    help = []
+    for i in range(0, n):
+        # print(sorted_labels[i][0])
+        help.append(sorted_labels[i][0])
+
+    # np.reshape()
+    yyy = np.array(help)
+    print(yyy)
+
     errors = list(map(lambda k: classification_error(p_y_x_knn(sorted_labels, k), yval), k_values))
     min_index = np.argmin(errors)
     return min(errors), k_values[min_index], errors
@@ -142,6 +163,7 @@ def p_y_x_knn1(y, k):
     summed = np.delete(summed_with_zero, 0, axis=1)
     return summed / k
 
+
 def classification_error1(p_y_x, y_true):
     """
     Wyznacz blad klasyfikacji.
@@ -150,7 +172,7 @@ def classification_error1(p_y_x, y_true):
     Kazdy wiersz macierzy reprezentuje rozklad p(y|x)
     :return: blad klasyfikacji
     """
-    #print(p_y_x)
+    # print(p_y_x)
     number_of_classes = p_y_x.shape[1]
     reversed_rows = np.fliplr(p_y_x)
     predicted = number_of_classes - np.argmax(reversed_rows, axis=1)
